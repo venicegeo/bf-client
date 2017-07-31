@@ -1,159 +1,193 @@
+/* Copyright 2017, RadiantBlue Technologies, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package main
 
 import (
-	"fmt"
+	"log"
 	"os"
+	"strings"
+
+	"github.com/venicegeo/bf-client/client"
 
 	"gopkg.in/urfave/cli.v1"
 )
 
 func main() {
 
-	app := cli.NewApp()
+	catalogCommand := cli.Command{
+		Name:    "catalog",
+		Aliases: []string{"cat"},
+		Usage:   "access catalog (imagery feed) services",
 
-	app.Name = "beachfront"
-	app.Usage = "access the Beachfront services"
-
-	app.Commands = []cli.Command{
-		{
-			Name:    "catalog",
-			Aliases: []string{"cat"},
-			Usage:   "access catalog (imagery feed) services",
-
-			Flags: []cli.Flag{
-				cli.BoolFlag{
-					Name:  "info,i",
-					Usage: "get information about a scene, a catalog, or all catalogs",
-				},
-				cli.StringFlag{
-					Name:  "download,d",
-					Usage: "downoad a scene from a catalog",
-				},
+		Flags: []cli.Flag{
+			cli.BoolFlag{
+				Name:  "info,i",
+				Usage: "get information about a scene, a catalog, or all catalogs",
 			},
-			Action: func(c *cli.Context) error {
-				info := c.IsSet("info")
-				download := c.IsSet("download")
-
-				switch {
-				case info && !download:
-					arg0, err := getZeroOrOneArg("catalog info", c)
-					if err != nil {
-						return err
-					}
-					return runCatalogInfo(arg0)
-				case !info && download:
-					arg, err := getOneArg("catalog download", c)
-					if err != nil {
-						return err
-					}
-					return runCatalogDownload(arg)
-				default:
-					return cli.NewExitError("catalog: exactly one of --info and --download is required", 2)
-				}
+			cli.BoolFlag{
+				Name:  "download,d",
+				Usage: "downoad a scene from a catalog",
 			},
 		},
-		{
-			Name: "job",
-			//Aliases: []string{""},
-			Usage: "access job services",
+		Action: func(c *cli.Context) error {
+			info := c.IsSet("info")
+			download := c.IsSet("download")
 
-			Flags: []cli.Flag{
-				cli.BoolFlag{
-					Name:  "info,i",
-					Usage: "get information about a job or all jobs",
-				},
-				cli.BoolFlag{
-					Name:  "submit,s",
-					Usage: "submit a new job for execution",
-				},
-				cli.BoolFlag{
-					Name:  "delete,d",
-					Usage: "delete a job",
-				},
-			},
-			Action: func(c *cli.Context) error {
-				info := c.IsSet("info")
-				submit := c.IsSet("submit")
-				delete := c.IsSet("delete")
-
-				switch {
-				case info && !submit && !delete:
-					arg, err := getZeroOrOneArg("job info", c)
-					if err != nil {
-						return err
-					}
-					return runJobInfo(arg)
-				case !info && submit && !delete:
-					return runJobSubmit()
-				case !info && !submit && delete:
-					arg, err := getOneArg("job deletion", c)
-					if err != nil {
-						return err
-					}
-					return runJobDelete(arg)
-				default:
-					return cli.NewExitError("job: exactly one of --info and --submit is required", 2)
+			switch {
+			case info && !download:
+				arg, err := getZeroOrOneArg("catalog info", c)
+				if err != nil {
+					return err
 				}
+				switch {
+				case arg == "":
+					return runCatalogInfoForCatalogs()
+				case strings.Contains(arg, ":"):
+					return runCatalogInfoForScene(arg)
+				default:
+					return runCatalogInfoForCatalog(arg)
+				}
+			case !info && download:
+				arg, err := getOneArg("catalog download", c)
+				if err != nil {
+					return err
+				}
+				return runCatalogSceneDownload(arg)
+			default:
+				return cli.NewExitError("catalog: exactly one of --info and --download is required", 2)
+			}
+		},
+	}
+
+	jobCommand := cli.Command{
+		Name: "job",
+		//Aliases: []string{""},
+		Usage: "access job services",
+
+		Flags: []cli.Flag{
+			cli.BoolFlag{
+				Name:  "info,i",
+				Usage: "get information about a job or all jobs",
+			},
+			cli.BoolFlag{
+				Name:  "submit,s",
+				Usage: "submit a new job for execution",
+			},
+			cli.BoolFlag{
+				Name:  "delete,d",
+				Usage: "delete a job",
 			},
 		},
-		{
-			Name:    "coastline",
-			Aliases: []string{"coast"},
-			Usage:   "access coastline data",
+		Action: func(c *cli.Context) error {
+			info := c.IsSet("info")
+			submit := c.IsSet("submit")
+			delete := c.IsSet("delete")
 
-			Flags: []cli.Flag{
-				cli.BoolFlag{
-					Name:  "download,d",
-					Usage: "download the geojson coastline file",
-				},
-			},
-			Action: func(c *cli.Context) error {
-				download := c.IsSet("download")
-
-				switch {
-				case download:
-					arg, err := getOneArg("coastline download", c)
-					if err != nil {
-						return err
-					}
-					return runCoastlineDownload(arg)
-				default:
-					return cli.NewExitError("coastline: --download is required", 2)
+			switch {
+			case info && !submit && !delete:
+				arg, err := getZeroOrOneArg("job info", c)
+				if err != nil {
+					return err
 				}
+				if arg == "" {
+					return runJobInfoForJobs()
+				} else {
+					return runJobInfoForJob(arg)
+				}
+			case !info && submit && !delete:
+				return runJobSubmit()
+			case !info && !submit && delete:
+				arg, err := getOneArg("job deletion", c)
+				if err != nil {
+					return err
+				}
+				return runJobDelete(arg)
+			default:
+				return cli.NewExitError("job: exactly one of --info and --submit is required", 2)
+			}
+		},
+	}
+
+	coastlineCommand := cli.Command{
+		Name:    "coastline",
+		Aliases: []string{"coast"},
+		Usage:   "access coastline data",
+
+		Flags: []cli.Flag{
+			cli.BoolFlag{
+				Name:  "download,d",
+				Usage: "download the geojson coastline file",
 			},
 		},
-		{
-			Name:    "algorithm",
-			Aliases: []string{"alg"},
-			Usage:   "access the algorithm services",
+		Action: func(c *cli.Context) error {
+			download := c.IsSet("download")
 
-			Flags: []cli.Flag{
-				cli.BoolFlag{
-					Name:  "info,i",
-					Usage: "get information about an algorithm or all algorithms",
-				},
+			switch {
+			case download:
+				arg, err := getOneArg("coastline download", c)
+				if err != nil {
+					return err
+				}
+				return runCoastlineDownload(arg)
+			default:
+				return cli.NewExitError("coastline: --download is required", 2)
+			}
+		},
+	}
+
+	algorithmCommand := cli.Command{
+		Name:    "algorithm",
+		Aliases: []string{"alg"},
+		Usage:   "access the algorithm services",
+
+		Flags: []cli.Flag{
+			cli.BoolFlag{
+				Name:  "info,i",
+				Usage: "get information about an algorithm or all algorithms",
 			},
-			Action: func(c *cli.Context) error {
-				info := c.IsSet("info")
+		},
+		Action: func(c *cli.Context) error {
+			info := c.IsSet("info")
 
+			switch {
+			case info:
 				arg, err := getZeroOrOneArg("algorithm info", c)
 				if err != nil {
 					return err
 				}
-
-				switch {
-				case info:
-					return runAlgorithmInfo(arg)
-				default:
-					return cli.NewExitError("algorithm: --info is required", 2)
+				if arg == "" {
+					return runAlgorithmInfoForAll()
+				} else {
+					return runAlgorithmInfoForOne(arg)
 				}
-			},
+			default:
+				return cli.NewExitError("algorithm: --info is required", 2)
+			}
 		},
 	}
 
-	app.Action = func(c *cli.Context) error {
-		fmt.Println("boom! I say!")
-		return nil
+	app := cli.NewApp()
+	app.Name = "beachfront"
+	app.Usage = "access the Beachfront services"
+
+	app.Commands = []cli.Command{
+		catalogCommand,
+		jobCommand,
+		coastlineCommand,
+		algorithmCommand,
 	}
 
 	app.Run(os.Args)
@@ -173,6 +207,7 @@ func getZeroOrOneArg(area string, c *cli.Context) (string, error) {
 }
 
 func getOneArg(area string, c *cli.Context) (string, error) {
+	log.Print(c.Args())
 	switch c.NArg() {
 	case 1:
 		return c.Args().Get(0), nil
@@ -181,18 +216,65 @@ func getOneArg(area string, c *cli.Context) (string, error) {
 	}
 }
 
+func newBFClient() (*client.BFClient, error) {
+
+	c, err := client.NewBFClient()
+	if err != nil {
+		return nil, err
+	}
+
+	return c, nil
+}
+
 //---------------------------------------------------------------------
 
-func runCatalogInfo(id string) error {
-	return nil
+func runCatalogInfoForCatalogs() error {
+	c, err := newBFClient()
+	if err != nil {
+		return err
+	}
+	return c.GetCatalogInfoForCatalogs()
 }
 
-func runCatalogDownload(id string) error {
-	return nil
+func runCatalogInfoForScene(id string) error {
+	c, err := newBFClient()
+	if err != nil {
+		return err
+	}
+	_, err = c.GetCatalogInfoForScene(id)
+	return err
 }
 
-func runJobInfo(id string) error {
-	return nil
+func runCatalogInfoForCatalog(id string) error {
+	c, err := newBFClient()
+	if err != nil {
+		return err
+	}
+	return c.GetCatalogInfoForCatalog(id)
+}
+
+func runCatalogSceneDownload(id string) error {
+	c, err := newBFClient()
+	if err != nil {
+		return err
+	}
+	return c.DoCatalogSceneDownload(id)
+}
+
+func runJobInfoForJobs() error {
+	c, err := newBFClient()
+	if err != nil {
+		return err
+	}
+	return c.GetJobInfoForJobs()
+}
+
+func runJobInfoForJob(id string) error {
+	c, err := newBFClient()
+	if err != nil {
+		return err
+	}
+	return c.GetJobInfoForJob(id)
 }
 
 func runJobSubmit() error {
@@ -204,9 +286,25 @@ func runJobDelete(id string) error {
 }
 
 func runCoastlineDownload(id string) error {
-	return nil
+	c, err := newBFClient()
+	if err != nil {
+		return err
+	}
+	return c.DoCoastlineDownload(id)
 }
 
-func runAlgorithmInfo(id string) error {
-	return nil
+func runAlgorithmInfoForAll() error {
+	c, err := newBFClient()
+	if err != nil {
+		return err
+	}
+	return c.GetAlgorithmInfoForAll()
+}
+
+func runAlgorithmInfoForOne(id string) error {
+	c, err := newBFClient()
+	if err != nil {
+		return err
+	}
+	return c.GetAlgorithmInfoForOne(id)
 }
