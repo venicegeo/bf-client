@@ -29,75 +29,75 @@ import (
 func doHttpGetJSON(
 	url string,
 	timeout time.Duration,
-) (int, string, error) {
+	expectedStatus int,
+) (string, error) {
 
 	client := &http.Client{Timeout: timeout}
 
 	log.Printf("URL: %s %s", "GET", url)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return 0, "", err
+		return "", err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return 0, "", err
+		return "", err
 	}
 
-	status := resp.StatusCode
+	if resp.StatusCode != expectedStatus {
+		return "", fmt.Errorf("HTTP request failed with status %d", resp.StatusCode)
+	}
 
 	responseBody, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	if err != nil {
-		return 0, "", err
+		return "", err
 	}
 
-	return status, string(responseBody), nil
+	return string(responseBody), nil
 }
 
 func doHttpGetJSONWithAuth(
 	url string,
-	timeout time.Duration,
 	auth string,
-) (int, string, error) {
+	expectedStatus int,
+) (string, error) {
 
-	auth64 := ""
-	if auth != "" {
-		if auth[len(auth)-1:len(auth)] != ":" {
-			auth = auth + ":"
-		}
-		auth64 = base64.StdEncoding.EncodeToString([]byte(auth))
+	if auth[len(auth)-1:len(auth)] != ":" {
+		auth = auth + ":"
 	}
+	auth64 := base64.StdEncoding.EncodeToString([]byte(auth))
 
-	client := &http.Client{Timeout: timeout}
+	client := &http.Client{}
 
 	log.Printf("URL: %s %s", "GET", url)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return 0, "", err
+		return "", err
 	}
 
-	if auth64 != "" {
-		req.Header.Set("Authorization", "Basic "+auth64)
-	}
+	req.Header.Set("Authorization", "Basic "+auth64)
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return 0, "", err
+		return "", err
 	}
 
-	status := resp.StatusCode
+	if resp.StatusCode != expectedStatus {
+		return "", fmt.Errorf("HTTP request failed with status %d", resp.StatusCode)
+	}
 
 	responseBody, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	if err != nil {
-		return 0, "", err
+		return "", err
 	}
 
-	return status, string(responseBody), nil
+	return string(responseBody), nil
 }
 
 func doHttpGetBytes(

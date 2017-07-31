@@ -16,6 +16,7 @@ limitations under the License.
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -226,43 +227,112 @@ func newBFClient() (*client.BFClient, error) {
 	return c, nil
 }
 
+func newCatalogClient() (*client.CatalogClient, error) {
+
+	c, err := client.NewCatalogClient()
+	if err != nil {
+		return nil, err
+	}
+
+	return c, nil
+}
+
+func newJobClient() (*client.JobClient, error) {
+
+	c, err := client.NewJobClient()
+	if err != nil {
+		return nil, err
+	}
+
+	return c, nil
+}
+
+func newCoastlineClient() (*client.CoastlineClient, error) {
+
+	c, err := client.NewCoastlineClient()
+	if err != nil {
+		return nil, err
+	}
+
+	return c, nil
+}
+
+func newAlgorithmClient() (*client.AlgorithmClient, error) {
+
+	c, err := client.NewAlgorithmClient()
+	if err != nil {
+		return nil, err
+	}
+
+	return c, nil
+}
+
 //---------------------------------------------------------------------
 
 func runCatalogInfoForCatalogs() error {
-	c, err := newBFClient()
+	c, err := newCatalogClient()
 	if err != nil {
 		return err
 	}
-	return c.GetCatalogInfoForCatalogs()
+	s, err := c.GetCatalogInfoForCatalogs()
+	if err != nil {
+		return err
+	}
+
+	fmt.Print(s)
+
+	return nil
 }
 
 func runCatalogInfoForScene(id string) error {
-	c, err := newBFClient()
+	c, err := newCatalogClient()
 	if err != nil {
 		return err
 	}
-	_, err = c.GetCatalogInfoForScene(id)
-	return err
+	s, err := c.GetCatalogInfoForScene(id)
+	if err != nil {
+		return err
+	}
+
+	fmt.Print(s)
+
+	return nil
 }
 
 func runCatalogInfoForCatalog(id string) error {
-	c, err := newBFClient()
+	c, err := newCatalogClient()
 	if err != nil {
 		return err
 	}
-	return c.GetCatalogInfoForCatalog(id)
+	s, err := c.GetCatalogInfoForCatalog(id)
+	if err != nil {
+		return err
+	}
+
+	fmt.Print(s)
+
+	return nil
 }
 
 func runCatalogSceneDownload(id string) error {
-	c, err := newBFClient()
+	c, err := newCatalogClient()
 	if err != nil {
 		return err
 	}
-	return c.DoCatalogSceneDownload(id)
+	info, err := c.DoCatalogSceneDownload(id)
+	if err != nil {
+		return err
+	}
+
+	for k, v := range info {
+		fmt.Printf("%s: %d bytes\n", k, v)
+	}
+
+	return nil
 }
 
 func runJobInfoForJobs() error {
-	c, err := newBFClient()
+	c, err := newJobClient()
 	if err != nil {
 		return err
 	}
@@ -270,7 +340,7 @@ func runJobInfoForJobs() error {
 }
 
 func runJobInfoForJob(id string) error {
-	c, err := newBFClient()
+	c, err := newJobClient()
 	if err != nil {
 		return err
 	}
@@ -286,7 +356,7 @@ func runJobDelete(id string) error {
 }
 
 func runCoastlineDownload(id string) error {
-	c, err := newBFClient()
+	c, err := newCoastlineClient()
 	if err != nil {
 		return err
 	}
@@ -294,7 +364,7 @@ func runCoastlineDownload(id string) error {
 }
 
 func runAlgorithmInfoForAll() error {
-	c, err := newBFClient()
+	c, err := newAlgorithmClient()
 	if err != nil {
 		return err
 	}
@@ -302,7 +372,7 @@ func runAlgorithmInfoForAll() error {
 }
 
 func runAlgorithmInfoForOne(id string) error {
-	c, err := newBFClient()
+	c, err := newAlgorithmClient()
 	if err != nil {
 		return err
 	}

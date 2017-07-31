@@ -8,3 +8,4 @@ The Beachfront command line app and associated libraries (in Go)
 * Support submit job
 * Support delete job
 * Support parameters on search images: cloud cover, bbox, dates
+* Support feeds other than Planet (when BF does)
