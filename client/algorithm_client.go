@@ -42,7 +42,7 @@ func NewAlgorithmClient() (*AlgorithmClient, error) {
 
 //---------------------------------------------------------------------
 
-func (c *AlgorithmClient) GetAlgorithmInfoForAll() error {
+func (c *AlgorithmClient) GetAlgorithmInfoForAll() (string, error) {
 
 	log.Print("GetAlgorithmInfoForAll")
 	path := "/v0/algorithm"
@@ -50,15 +50,13 @@ func (c *AlgorithmClient) GetAlgorithmInfoForAll() error {
 
 	responseBody, err := doHttpGetJSONWithAuth(url, c.auth, 200)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	log.Print(responseBody)
-
-	return nil
+	return responseBody, nil
 }
 
-func (c *AlgorithmClient) GetAlgorithmInfoForOne(id string) error {
+func (c *AlgorithmClient) GetAlgorithmInfoForOne(id string) (string, error) {
 
 	log.Print("GetAlgorithmInfoForOne")
 
@@ -67,10 +65,8 @@ func (c *AlgorithmClient) GetAlgorithmInfoForOne(id string) error {
 
 	responseBody, err := doHttpGetJSONWithAuth(url, c.auth, 200)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	log.Print(responseBody)
-
-	return nil
+	return responseBody, nil
 }

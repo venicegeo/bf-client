@@ -336,7 +336,12 @@ func runJobInfoForJobs() error {
 	if err != nil {
 		return err
 	}
-	return c.GetJobInfoForJobs()
+	s, err := c.GetJobInfoForJobs()
+	if err != nil {
+		return err
+	}
+	fmt.Print(s)
+	return nil
 }
 
 func runJobInfoForJob(id string) error {
@@ -344,7 +349,12 @@ func runJobInfoForJob(id string) error {
 	if err != nil {
 		return err
 	}
-	return c.GetJobInfoForJob(id)
+	s, err := c.GetJobInfoForJob(id)
+	if err != nil {
+		return err
+	}
+	fmt.Print(s)
+	return nil
 }
 
 func runJobSubmit() error {
@@ -360,7 +370,12 @@ func runCoastlineDownload(id string) error {
 	if err != nil {
 		return err
 	}
-	return c.DoCoastlineDownload(id)
+	s, err := c.DoCoastlineDownload(id)
+	if err != nil {
+		return err
+	}
+	fmt.Print(s)
+	return nil
 }
 
 func runAlgorithmInfoForAll() error {
@@ -368,7 +383,12 @@ func runAlgorithmInfoForAll() error {
 	if err != nil {
 		return err
 	}
-	return c.GetAlgorithmInfoForAll()
+	s, err := c.GetAlgorithmInfoForAll()
+	if err != nil {
+		return err
+	}
+	fmt.Print(s)
+	return nil
 }
 
 func runAlgorithmInfoForOne(id string) error {
@@ -376,5 +396,10 @@ func runAlgorithmInfoForOne(id string) error {
 	if err != nil {
 		return err
 	}
-	return c.GetAlgorithmInfoForOne(id)
+	s, err := c.GetAlgorithmInfoForOne(id)
+	if err != nil {
+		return err
+	}
+	fmt.Print(s)
+	return nil
 }

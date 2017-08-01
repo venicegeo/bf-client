@@ -20,7 +20,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"time"
@@ -34,7 +33,7 @@ func doHttpGetJSON(
 
 	client := &http.Client{Timeout: timeout}
 
-	log.Printf("URL: %s %s", "GET", url)
+	/////log.Printf("URL: %s %s", "GET", url)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return "", err
@@ -73,7 +72,7 @@ func doHttpGetJSONWithAuth(
 
 	client := &http.Client{}
 
-	log.Printf("URL: %s %s", "GET", url)
+	//////log.Printf("URL: %s %s", "GET", url)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return "", err

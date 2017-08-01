@@ -17,7 +17,6 @@ package client
 
 import (
 	"fmt"
-	"log"
 
 	"gopkg.in/urfave/cli.v1"
 )
@@ -44,34 +43,34 @@ func NewJobClient() (*JobClient, error) {
 
 //---------------------------------------------------------------------
 
-func (c *JobClient) GetJobInfoForJobs() error {
+func (c *JobClient) GetJobInfoForJobs() (string, error) {
 
 	path := "/v0/job"
 	url := fmt.Sprintf("%s%s", c.url, path)
 
 	responseBody, err := doHttpGetJSONWithAuth(url, c.auth, 200)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	log.Print(responseBody)
+	//log.Print(responseBody)
 
-	return nil
+	return responseBody, nil
 }
 
-func (c *JobClient) GetJobInfoForJob(id string) error {
+func (c *JobClient) GetJobInfoForJob(id string) (string, error) {
 
 	path := "/v0/job"
 	url := fmt.Sprintf("%s%s/%s", c.url, path, id)
 
 	responseBody, err := doHttpGetJSONWithAuth(url, c.auth, 200)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	log.Print(responseBody)
+	//log.Print(responseBody)
 
-	return nil
+	return responseBody, nil
 }
 
 func (c *JobClient) DoJobSubmit() error {

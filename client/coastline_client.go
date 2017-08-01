@@ -43,7 +43,7 @@ func NewCoastlineClient() (*CoastlineClient, error) {
 
 //---------------------------------------------------------------------
 
-func (c *CoastlineClient) DoCoastlineDownload(id string) error {
+func (c *CoastlineClient) DoCoastlineDownload(id string) (string, error) {
 
 	log.Printf("DoCoastlineDownload")
 
@@ -52,14 +52,14 @@ func (c *CoastlineClient) DoCoastlineDownload(id string) error {
 
 	responseBody, err := doHttpGetJSONWithAuth(url, c.auth, 200)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	// TODO: fix root path
 	err = ioutil.WriteFile("./"+id+".geojson", []byte(responseBody), 0600)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return fmt.Sprintf("Wrote %d bytes of geojson\n", len(responseBody)), nil
 }
