@@ -15,31 +15,41 @@ limitations under the License.
 
 package client
 
-import "time"
-
 const apiServer = "bf-api"
 
-type BFClient struct {
-	Timeout time.Duration
-
-	bfDomain  string // "int.geointservices.io"
-	bfAuth    string
-	planetKey string
+type Client struct {
+	Catalog   *CatalogClient
+	Job       *JobClient
+	Coastline *CoastlineClient
+	Algorithm *AlgorithmClient
 }
 
-func NewBFClient() (*BFClient, error) {
+func NewClient() (*Client, error) {
 
-	fields, err := ReadBeachfrontrcFields([]string{"domain", "auth", "planet_key"})
+	var err error
+	c := &Client{}
+
+	c.Catalog, err = NewCatalogClient()
 	if err != nil {
 		return nil, err
 	}
 
-	return &BFClient{
-		Timeout:   2 * time.Minute,
-		bfDomain:  fields["domain"],
-		bfAuth:    fields["auth"],
-		planetKey: fields["planet_key"],
-	}, nil
+	c.Job, err = NewJobClient()
+	if err != nil {
+		return nil, err
+	}
+
+	c.Coastline, err = NewCoastlineClient()
+	if err != nil {
+		return nil, err
+	}
+
+	c.Algorithm, err = NewAlgorithmClient()
+	if err != nil {
+		return nil, err
+	}
+
+	return c, nil
 }
 
 //---------------------------------------------------------------------

@@ -28,7 +28,7 @@ func TestCatalogInfoForCatalogs(t *testing.T) {
 	c, err := NewCatalogClient()
 	assert.NoError(err)
 
-	_, err = c.GetCatalogInfoForCatalogs()
+	_, err = c.GetInfoForCatalogs()
 	assert.Error(err)
 }
 
@@ -38,7 +38,7 @@ func TestCatalogInfoForScene(t *testing.T) {
 	c, err := NewCatalogClient()
 	assert.NoError(err)
 
-	s, err := c.GetCatalogInfoForScene("landsat:LC81260322017212LGN00")
+	s, err := c.GetInfoForScene("landsat:LC81260322017212LGN00")
 	assert.NoError(err)
 
 	obj := map[string]interface{}{}
@@ -55,7 +55,7 @@ func TestCatalogInfoForCatalog(t *testing.T) {
 	c, err := NewCatalogClient()
 	assert.NoError(err)
 
-	s, err := c.GetCatalogInfoForCatalog("landsat")
+	s, err := c.GetInfoForCatalog("landsat")
 	assert.NoError(err)
 
 	obj := map[string]interface{}{}

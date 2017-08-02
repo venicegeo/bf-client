@@ -217,16 +217,6 @@ func getOneArg(area string, c *cli.Context) (string, error) {
 	}
 }
 
-func newBFClient() (*client.BFClient, error) {
-
-	c, err := client.NewBFClient()
-	if err != nil {
-		return nil, err
-	}
-
-	return c, nil
-}
-
 func newCatalogClient() (*client.CatalogClient, error) {
 
 	c, err := client.NewCatalogClient()
@@ -274,7 +264,7 @@ func runCatalogInfoForCatalogs() error {
 	if err != nil {
 		return err
 	}
-	s, err := c.GetCatalogInfoForCatalogs()
+	s, err := c.GetInfoForCatalogs()
 	if err != nil {
 		return err
 	}
@@ -289,7 +279,7 @@ func runCatalogInfoForScene(id string) error {
 	if err != nil {
 		return err
 	}
-	s, err := c.GetCatalogInfoForScene(id)
+	s, err := c.GetInfoForScene(id)
 	if err != nil {
 		return err
 	}
@@ -304,7 +294,7 @@ func runCatalogInfoForCatalog(id string) error {
 	if err != nil {
 		return err
 	}
-	s, err := c.GetCatalogInfoForCatalog(id)
+	s, err := c.GetInfoForCatalog(id)
 	if err != nil {
 		return err
 	}
@@ -336,7 +326,7 @@ func runJobInfoForJobs() error {
 	if err != nil {
 		return err
 	}
-	s, err := c.GetJobInfoForJobs()
+	s, err := c.GetInfoForJobs()
 	if err != nil {
 		return err
 	}
@@ -349,7 +339,7 @@ func runJobInfoForJob(id string) error {
 	if err != nil {
 		return err
 	}
-	s, err := c.GetJobInfoForJob(id)
+	s, err := c.GetInfoForJob(id)
 	if err != nil {
 		return err
 	}
@@ -370,7 +360,7 @@ func runCoastlineDownload(id string) error {
 	if err != nil {
 		return err
 	}
-	s, err := c.DoCoastlineDownload(id)
+	s, err := c.DoDownload(id)
 	if err != nil {
 		return err
 	}
@@ -383,7 +373,7 @@ func runAlgorithmInfoForAll() error {
 	if err != nil {
 		return err
 	}
-	s, err := c.GetAlgorithmInfoForAll()
+	s, err := c.GetInfoForAll()
 	if err != nil {
 		return err
 	}
@@ -396,7 +386,7 @@ func runAlgorithmInfoForOne(id string) error {
 	if err != nil {
 		return err
 	}
-	s, err := c.GetAlgorithmInfoForOne(id)
+	s, err := c.GetInfoForOne(id)
 	if err != nil {
 		return err
 	}

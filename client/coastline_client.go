@@ -43,9 +43,9 @@ func NewCoastlineClient() (*CoastlineClient, error) {
 
 //---------------------------------------------------------------------
 
-func (c *CoastlineClient) DoCoastlineDownload(id string) (string, error) {
+func (c *CoastlineClient) DoDownload(id string) (string, error) {
 
-	log.Printf("DoCoastlineDownload")
+	log.Printf("Coastline.DoDownload")
 
 	path := "/v0/job"
 	url := fmt.Sprintf("%s%s/%s.geojson", c.url, path, id)

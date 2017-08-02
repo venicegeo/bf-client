@@ -28,7 +28,7 @@ func TestJobInfoForJobs(t *testing.T) {
 	c, err := NewJobClient()
 	assert.NoError(err)
 
-	s, err := c.GetJobInfoForJobs()
+	s, err := c.GetInfoForJobs()
 	assert.NoError(err)
 
 	obj := map[string]interface{}{}
@@ -51,7 +51,7 @@ func TestJobInfoForJob(t *testing.T) {
 	c, err := NewJobClient()
 	assert.NoError(err)
 
-	s, err := c.GetJobInfoForJob(id)
+	s, err := c.GetInfoForJob(id)
 	assert.NoError(err)
 
 	obj := map[string]interface{}{}
