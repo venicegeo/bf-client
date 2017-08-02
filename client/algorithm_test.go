@@ -17,6 +17,7 @@ package client
 
 import (
 	"encoding/json"
+	"log"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -28,12 +29,40 @@ func TestAlgorithmInfoForAll(t *testing.T) {
 	c, err := NewAlgorithmClient()
 	assert.NoError(err)
 
-	s, err := c.GetAlgorithmInfoForAll()
+	s, err := c.GetInfoForAll()
 	assert.NoError(err)
 
 	obj := map[string]interface{}{}
 	err = json.Unmarshal([]byte(s), &obj)
 	assert.NoError(err)
+
+	obj2 := obj["algorithms"].([]interface{})
+
+	found := false
+	for _, v := range obj2 {
+		obj3 := v.(map[string]interface{})["name"]
+		if obj3 == "NDWI_PY" {
+			found = true
+			break
+		}
+	}
+	assert.True(found)
+}
+
+func TestAlgorithmInfoForOne(t *testing.T) {
+	assert := assert.New(t)
+
+	c, err := NewAlgorithmClient()
+	assert.NoError(err)
+
+	// TODO: get id from a getall call(), not hard-coded here
+	s, err := c.GetInfoForOne("f64d4845-0b9d-4bf1-8d49-45bafd639875")
+	assert.NoError(err)
+
+	obj := map[string]interface{}{}
+	err = json.Unmarshal([]byte(s), &obj)
+	assert.NoError(err)
+	log.Print(s)
 
 	obj2 := obj["algorithms"].([]interface{})
 

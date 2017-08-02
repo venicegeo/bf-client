@@ -30,7 +30,7 @@ func TestCoastlineDownload(t *testing.T) {
 	const id = "6f475d16-d8f1-4f15-9dda-cf9b2d502241"
 
 	//	t.Skip("downloads take too long and may time out")
-	m, err := c.DoCoastlineDownload(id)
+	m, err := c.DoDownload(id)
 	assert.NoError(err)
 
 	assert.Contains(m, "3530022")

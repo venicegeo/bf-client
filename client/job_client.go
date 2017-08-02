@@ -17,6 +17,7 @@ package client
 
 import (
 	"fmt"
+	"log"
 
 	"gopkg.in/urfave/cli.v1"
 )
@@ -43,7 +44,9 @@ func NewJobClient() (*JobClient, error) {
 
 //---------------------------------------------------------------------
 
-func (c *JobClient) GetJobInfoForJobs() (string, error) {
+func (c *JobClient) GetInfoForJobs() (string, error) {
+
+	log.Printf("Job.GetInfoForJobs")
 
 	path := "/v0/job"
 	url := fmt.Sprintf("%s%s", c.url, path)
@@ -58,7 +61,9 @@ func (c *JobClient) GetJobInfoForJobs() (string, error) {
 	return responseBody, nil
 }
 
-func (c *JobClient) GetJobInfoForJob(id string) (string, error) {
+func (c *JobClient) GetInfoForJob(id string) (string, error) {
+
+	log.Printf("Job.GetInfoForJob")
 
 	path := "/v0/job"
 	url := fmt.Sprintf("%s%s/%s", c.url, path, id)
@@ -74,9 +79,13 @@ func (c *JobClient) GetJobInfoForJob(id string) (string, error) {
 }
 
 func (c *JobClient) DoJobSubmit() error {
+	log.Printf("Job.DoJobSubmit")
+
 	return cli.NewExitError("job: --submit not yet supported", 2)
 }
 
 func (c *JobClient) DoJobDelete(id string) error {
+	log.Printf("Job.DoJobDelete")
+
 	return cli.NewExitError("job: --delete not yet supported", 2)
 }

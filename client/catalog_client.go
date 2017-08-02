@@ -52,12 +52,35 @@ func NewCatalogClient() (*CatalogClient, error) {
 
 //---------------------------------------------------------------------
 
-type sceneInfo struct {
-	Properties propertiesInfo
+type Catalog struct {
+	Type     string
+	Features []*CatalogFeature
 }
 
-type propertiesInfo struct {
-	Bands map[string]string
+type CatalogFeature struct {
+	Type       string
+	Geometry   *GeometryInfo
+	Properties *PropertiesInfo
+	Id         string
+	Bbox       [4]float64
+}
+
+type GeometryInfo struct {
+	Type        string
+	Coordinates [][][]float64
+}
+
+type PropertiesInfo struct {
+	AcquiredDate string
+	Bands        map[string]string
+	CloudCover   float64
+	FileFormat   string
+	resolution   float64
+	sensorName   string
+}
+
+type SceneInfo struct {
+	Properties PropertiesInfo
 }
 
 //---------------------------------------------------------------------
@@ -75,16 +98,16 @@ func splitId(id string) (string, string, error) {
 
 //---------------------------------------------------------------------
 
-func (c *CatalogClient) GetCatalogInfoForCatalogs() (string, error) {
+func (c *CatalogClient) GetInfoForCatalogs() (string, error) {
 
-	log.Printf("GetCatalogInfoForCatalogs")
+	log.Printf("Catalog.GetInfoForCatalogs")
 
 	return "", cli.NewExitError("catalog: --info for catalogs not yet supported", 2)
 }
 
-func (c *CatalogClient) GetCatalogInfoForScene(id string) (string, error) {
+func (c *CatalogClient) GetInfoForScene(id string) (string, error) {
 
-	log.Printf("GetCatalogInfoForScene")
+	log.Printf("Catalog.GetInfoForScene")
 
 	sensor, scene, err := splitId(id)
 	if err != nil {
@@ -100,9 +123,9 @@ func (c *CatalogClient) GetCatalogInfoForScene(id string) (string, error) {
 	return doHttpGetJSON(url, catalogTimeout, 200)
 }
 
-func (c *CatalogClient) GetCatalogInfoForCatalog(id string) (string, error) {
+func (c *CatalogClient) GetInfoForCatalog(id string) (string, error) {
 
-	log.Printf("GetCatalogInfoForCatalog")
+	log.Printf("Catalog.GetInfoForCatalog")
 
 	path := "/planet/discover/" + id
 
@@ -116,11 +139,11 @@ func (c *CatalogClient) GetCatalogInfoForCatalog(id string) (string, error) {
 // returns map: file name -> file size
 func (c *CatalogClient) DoCatalogSceneDownload(id string) (map[string]int, error) {
 
-	log.Printf("DoCatalogSceneDownload")
+	log.Printf("Catalog.DoSceneDownload")
 
-	body, err := c.GetCatalogInfoForScene(id)
+	body, err := c.GetInfoForScene(id)
 
-	info := sceneInfo{}
+	info := SceneInfo{}
 	err = json.Unmarshal([]byte(body), &info)
 	if err != nil {
 		return nil, err

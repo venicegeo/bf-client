@@ -16,6 +16,7 @@ limitations under the License.
 package client
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 )
@@ -24,6 +25,41 @@ type AlgorithmClient struct {
 	url  string
 	auth string
 }
+
+type Algorithms struct {
+	Algorithms []*AlgorithmInfo
+}
+
+type Algorithm struct {
+	Algorithm *AlgorithmInfo
+}
+
+type AlgorithmInfo struct {
+	Description   string
+	Interface     string
+	MaxCloudCover int `json:"max_cloud_cover"`
+	Name          string
+	ServiceId     string `json:"service_id"`
+	Version       string
+}
+
+func (a *Algorithms) String() string {
+	s := ""
+	for _, v := range a.Algorithms {
+		s += v.String() + "\n"
+	}
+	return s
+}
+
+func (a *Algorithm) String() string {
+	return a.Algorithm.String()
+}
+
+func (a *AlgorithmInfo) String() string {
+	return fmt.Sprintf("[algorithm %s]", a.ServiceId)
+}
+
+//---------------------------------------------------------------------
 
 func NewAlgorithmClient() (*AlgorithmClient, error) {
 
@@ -42,31 +78,43 @@ func NewAlgorithmClient() (*AlgorithmClient, error) {
 
 //---------------------------------------------------------------------
 
-func (c *AlgorithmClient) GetAlgorithmInfoForAll() (string, error) {
+func (c *AlgorithmClient) GetInfoForAll() (string, error) {
 
-	log.Print("GetAlgorithmInfoForAll")
+	log.Print("Algorithm.GetInfoForAll")
 	path := "/v0/algorithm"
 	url := fmt.Sprintf("%s%s", c.url, path)
 
-	responseBody, err := doHttpGetJSONWithAuth(url, c.auth, 200)
+	jsn, err := doHttpGetJSONWithAuth(url, c.auth, 200)
 	if err != nil {
 		return "", err
 	}
 
-	return responseBody, nil
+	obj := &Algorithms{}
+	err = json.Unmarshal([]byte(jsn), obj)
+	if err != nil {
+		return "", err
+	}
+
+	return obj.String(), nil
 }
 
-func (c *AlgorithmClient) GetAlgorithmInfoForOne(id string) (string, error) {
+func (c *AlgorithmClient) GetInfoForOne(id string) (string, error) {
 
-	log.Print("GetAlgorithmInfoForOne")
+	log.Print("Algorithm.GetInfoForOne")
 
 	path := "/v0/algorithm"
 	url := fmt.Sprintf("%s%s/%s", c.url, path, id)
 
-	responseBody, err := doHttpGetJSONWithAuth(url, c.auth, 200)
+	jsn, err := doHttpGetJSONWithAuth(url, c.auth, 200)
 	if err != nil {
 		return "", err
 	}
 
-	return responseBody, nil
+	obj := &Algorithm{}
+	err = json.Unmarshal([]byte(jsn), obj)
+	if err != nil {
+		return "", err
+	}
+
+	return obj.String(), nil
 }
