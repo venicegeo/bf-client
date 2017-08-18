@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"strings"
 	"time"
 
@@ -57,6 +58,14 @@ type Catalog struct {
 	Features []*CatalogFeature
 }
 
+func (c *Catalog) String() string {
+	s := ""
+	for _, v := range c.Features {
+		s += v.String() + "\n"
+	}
+	return s
+}
+
 type CatalogFeature struct {
 	Type       string
 	Geometry   *GeometryInfo
@@ -65,9 +74,18 @@ type CatalogFeature struct {
 	Bbox       [4]float64
 }
 
+func (c *CatalogFeature) String() string {
+	return fmt.Sprintf("[catalog-feature %s]", c.Id)
+}
+
+type Point []float64
+type PointList []Point
+type Any interface{}
+type AnyList []Any
+
 type GeometryInfo struct {
 	Type        string
-	Coordinates [][][]float64
+	Coordinates []AnyList // either [][]Point or [][]PointList
 }
 
 type PropertiesInfo struct {
@@ -85,6 +103,41 @@ type SceneInfo struct {
 
 //---------------------------------------------------------------------
 
+func toPoint(v interface{}) (Point, bool) {
+	point, ok := v.([]interface{})
+	if !ok {
+		return nil, false
+	}
+	x, ok := point[0].(float64)
+	if !ok {
+		return nil, false
+	}
+	y, ok := point[1].(float64)
+	if !ok {
+		return nil, false
+	}
+	return Point{x, y}, true
+}
+
+func toPointList(v interface{}) ([]Point, bool) {
+	list, ok := v.([]interface{})
+	if !ok {
+		return nil, false
+	}
+
+	cl := []Point{}
+	for _, v := range list {
+		point, ok := toPoint(v)
+		if !ok {
+			return nil, false
+		}
+		cl = append(cl, point)
+	}
+	return cl, true
+}
+
+//---------------------------------------------------------------------
+
 // landsat:LC80480102017209LGN00 -> (landsat, LC80480102017209LGN00)
 func splitId(id string) (string, string, error) {
 
@@ -98,11 +151,11 @@ func splitId(id string) (string, string, error) {
 
 //---------------------------------------------------------------------
 
-func (c *CatalogClient) GetInfoForCatalogs() (string, error) {
+func (c *CatalogClient) GetInfoForCatalogs() error {
 
 	log.Printf("Catalog.GetInfoForCatalogs")
 
-	return "", cli.NewExitError("catalog: --info for catalogs not yet supported", 2)
+	return cli.NewExitError("catalog: --info for catalogs not yet supported", 2)
 }
 
 func (c *CatalogClient) GetInfoForScene(id string) (string, error) {
@@ -120,7 +173,15 @@ func (c *CatalogClient) GetInfoForScene(id string) (string, error) {
 
 	url := fmt.Sprintf("%s%s?%s", c.url, path, params)
 
-	return doHttpGetJSON(url, catalogTimeout, 200)
+	jsn, err := doHttpGetJSON(url, catalogTimeout, 200)
+
+	obj := &Catalog{}
+	err = json.Unmarshal([]byte(jsn), obj)
+	if err != nil {
+		return "", err
+	}
+
+	return obj.String(), nil
 }
 
 func (c *CatalogClient) GetInfoForCatalog(id string) (string, error) {
@@ -133,7 +194,43 @@ func (c *CatalogClient) GetInfoForCatalog(id string) (string, error) {
 
 	url := fmt.Sprintf("%s%s?%s", c.url, path, params)
 
-	return doHttpGetJSON(url, catalogTimeout, 200)
+	jsn, err := doHttpGetJSON(url, catalogTimeout, 200)
+	if err != nil {
+		return "", err
+	}
+
+	obj := &Catalog{}
+	err = json.Unmarshal([]byte(jsn), obj)
+	if err != nil {
+		return "", err
+	}
+
+	for _, f := range obj.Features {
+		newCoordinates := make([]AnyList, len(f.Geometry.Coordinates))
+		for i, anyArray := range f.Geometry.Coordinates {
+			newArray := make(AnyList, len(anyArray))
+			for j, any := range anyArray {
+				point, ok := toPoint(any)
+				if ok {
+					fmt.Printf("%f %f\n", point[0], point[1])
+					newArray[j] = point
+				} else {
+					pointList, ok := toPointList(any)
+					if ok {
+						fmt.Printf("** %#v\n", pointList)
+						newArray[j] = pointList
+					} else {
+						fmt.Printf("=== %T === %v ===", any, any)
+						panic(17)
+					}
+				}
+			}
+			newCoordinates[i] = newArray
+		}
+		f.Geometry.Coordinates = newCoordinates
+	}
+	os.Exit(9)
+	return obj.String(), nil
 }
 
 // returns map: file name -> file size

@@ -28,7 +28,7 @@ func TestCatalogInfoForCatalogs(t *testing.T) {
 	c, err := NewCatalogClient()
 	assert.NoError(err)
 
-	_, err = c.GetInfoForCatalogs()
+	err = c.GetInfoForCatalogs()
 	assert.Error(err)
 }
 

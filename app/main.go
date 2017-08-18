@@ -264,14 +264,7 @@ func runCatalogInfoForCatalogs() error {
 	if err != nil {
 		return err
 	}
-	s, err := c.GetInfoForCatalogs()
-	if err != nil {
-		return err
-	}
-
-	fmt.Print(s)
-
-	return nil
+	return c.GetInfoForCatalogs()
 }
 
 func runCatalogInfoForScene(id string) error {
